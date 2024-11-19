@@ -1,0 +1,35 @@
+CREATE TABLE IF NOT EXISTS Customers (
+    CustomerID INTEGER PRIMARY KEY AUTOINCREMENT,
+    CustomerName TEXT,                      -- Customer's name
+    Email TEXT,                             -- Customer's email
+    Phone TEXT,                             -- Customer's phone number
+    Address TEXT,                           -- Customer's address
+    DateOfBirth TEXT,                       -- Customer's date of birth
+    JoinDate TEXT,                          -- Date the customer joined
+    LoyaltyPoints INTEGER DEFAULT 0,        -- Loyalty points earned
+    MembershipLevel TEXT                    -- Membership level (e.g., 'Bronze', 'Silver', 'Gold', 'Platinum')
+);
+-- Insert 1000 random customers into Customers table with additional columns
+WITH RECURSIVE generate_customers AS (
+    SELECT 1 AS row_num
+    UNION ALL
+    SELECT row_num + 1
+    FROM generate_customers
+    WHERE row_num < 1000
+)
+INSERT INTO Customers (CustomerName, Email, Phone, Address, DateOfBirth, JoinDate, LoyaltyPoints, MembershipLevel)
+SELECT
+    'Customer ' || row_num AS CustomerName,
+    'customer' || row_num || '@example.com' AS Email,
+    '+44' || abs(random()) % 1000000000 AS Phone,
+    'Address ' || row_num AS Address,
+    (abs(random()) % 50 + 1970) || '-' || substr('0' || (abs(random()) % 12 + 1), -2, 2) || '-' || substr('0' || (abs(random()) % 28 + 1), -2, 2) AS DateOfBirth,
+    (abs(random()) % 5 + 2018) || '-' || substr('0' || (abs(random()) % 12 + 1), -2, 2) || '-' || substr('0' || (abs(random()) % 28 + 1), -2, 2) AS JoinDate,
+    abs(random()) % 500 AS LoyaltyPoints,
+    CASE abs(random()) % 4 + 1
+        WHEN 1 THEN 'Bronze'
+        WHEN 2 THEN 'Silver'
+        WHEN 3 THEN 'Gold'
+        ELSE 'Platinum'
+    END AS MembershipLevel
+FROM generate_customers;
