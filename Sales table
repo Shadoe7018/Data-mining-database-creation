@@ -1,0 +1,32 @@
+CREATE TABLE IF NOT EXISTS Sales (
+    SaleID INTEGER PRIMARY KEY AUTOINCREMENT,
+    OrderID INTEGER,                          -- Reference to the Order in Orders table
+    SaleDate TEXT,                            -- Sale date
+    SaleAmount REAL,                          -- Total sale amount
+    PaymentMethod TEXT,                       -- Method of payment (e.g., 'Credit Card', 'Cash', etc.)
+    CustomerID INTEGER,                       -- Reference to Customer in Customers table
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);
+-- Insert 1000 random sales into Sales table with valid OrderID and CustomerID references
+WITH RECURSIVE generate_sales AS (
+    SELECT 1 AS row_num
+    UNION ALL
+    SELECT row_num + 1
+    FROM generate_sales
+    WHERE row_num < 1000
+)
+INSERT INTO Sales (OrderID, SaleDate, SaleAmount, PaymentMethod, CustomerID)
+SELECT
+    (SELECT OrderID FROM Orders ORDER BY random() LIMIT 1) AS OrderID,  -- Randomly select a valid OrderID from Orders table
+    (abs(random()) % 5 + 2020) || '-' ||
+    substr('0' || (abs(random()) % 12 + 1), -2, 2) || '-' ||
+    substr('0' || (abs(random()) % 28 + 1), -2, 2) AS SaleDate,          -- Random sale date
+    round((abs(random()) % 1000) / 100.0, 2) AS SaleAmount,              -- Random sale amount between 0 and 10.00
+    CASE abs(random()) % 3 + 1
+        WHEN 1 THEN 'Credit Card'
+        WHEN 2 THEN 'Cash'
+        ELSE 'Online Payment'
+    END AS PaymentMethod,                                                -- Random payment method
+    (SELECT CustomerID FROM Customers ORDER BY random() LIMIT 1) AS CustomerID  -- Randomly select a valid CustomerID from Customers table
+FROM generate_sales;
